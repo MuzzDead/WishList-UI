@@ -12,37 +12,55 @@ import {
   Input,
   InputGroup,
   InputRightElement,
-  Link,
   Stack,
+  Text,
+  useToast,
 } from "@chakra-ui/react";
 import { useRouter } from 'next/navigation';
+import { api } from '../services/api'; // Make sure this path is correct
+import { useAuth } from '../hooks/useAuth'; // Make sure this path is correct
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
+  const toast = useToast();
+  const { login } = useAuth();
 
-  const handleLogin = () => {
-    console.log("Login clicked");
-  };
-
-  const handleForgotPassword = () => {
-    console.log("Forgot password clicked");
+  const handleLogin = async () => {
+    setIsLoading(true);
+    try {
+      const result = await api.login(username, password);
+      login(result.token);
+      toast({
+        title: "Login successful",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      router.push('/');
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCancel = () => {
-    // Clear form fields
     setUsername("");
     setPassword("");
     setRememberMe(false);
-    
-    // Navigate to home page
     router.push('/');
-
-    console.log("Cancel clicked, form cleared, and navigating to home page");
   };
 
   return (
@@ -72,9 +90,7 @@ export default function LoginPage() {
                 <InputRightElement h={"full"}>
                   <Button
                     variant={"ghost"}
-                    onClick={() =>
-                      setShowPassword((showPassword) => !showPassword)
-                    }
+                    onClick={() => setShowPassword((showPassword) => !showPassword)}
                   >
                     {showPassword ? <ViewOffIcon /> : <ViewIcon />}
                   </Button>
@@ -82,19 +98,14 @@ export default function LoginPage() {
               </InputGroup>
             </FormControl>
             <Stack spacing={10}>
-              <Stack direction={{ base: "column", sm: "row" }} align={"start"} justify={"space-between"}>
-                <Checkbox
-                  isChecked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                >
+              <Stack
+                direction={{ base: "column", sm: "row" }}
+                align={"start"}
+                justify={"space-between"}
+              >
+ <Checkbox value={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}>
                   Remember me
                 </Checkbox>
-                <Link
-                  color={"blue.400"}
-                  onClick={handleForgotPassword}
-                >
-                  Forgot password?
-                </Link>
               </Stack>
               <Button
                 bg={"blue.400"}
@@ -103,14 +114,15 @@ export default function LoginPage() {
                   bg: "blue.500",
                 }}
                 onClick={handleLogin}
+                isLoading={isLoading}
               >
                 Login
               </Button>
               <Button
-                bg={"gray.400"}
-                color={"white"}
+                bg={"gray.300"}
+                color={"gray.600"}
                 _hover={{
-                  bg: "gray.500",
+                  bg: "gray.400",
                 }}
                 onClick={handleCancel}
               >
