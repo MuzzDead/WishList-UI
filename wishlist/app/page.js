@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import UserPage from "./components/UserPage";
 import Link from 'next/link';
+import SearchUser from "./components/SerchUser";
 
 
 const mockWishes = [
@@ -42,6 +43,7 @@ export default function Home() {
         </Button>
       </Link>
       
+      <SearchUser />
     </Box>
   );
 }
