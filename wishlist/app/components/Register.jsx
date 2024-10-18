@@ -12,11 +12,13 @@ import {
   Input,
   InputGroup,
   InputRightElement,
-  Link,
   Stack,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { useRouter } from 'next/navigation';
+import { api } from '../services/api'; // Make sure this path is correct
+import { useAuth } from '../hooks/useAuth'; // Make sure this path is correct
 
 export default function RegistrationPage() {
   const [username, setUsername] = useState("");
@@ -25,29 +27,53 @@ export default function RegistrationPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
+  const toast = useToast();
+  const { login } = useAuth();
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (password !== confirmPassword) {
-      alert("Passwords do not match");
-    } else {
-      // Register logic here
-      console.log("Register clicked");
+      toast({
+        title: "Passwords do not match",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+  
+    setIsLoading(true);
+    try {
+      const result = await api.register(username, password, confirmPassword);
+      login(result.token);
+      toast({
+        title: "Registration successful",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      router.push('/');
+    } catch (error) {
+      toast({
+        title: "Registration failed",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
-    // Clear form fields
     setUsername("");
     setPassword("");
     setConfirmPassword("");
     setRememberMe(false);
-    
-    // Navigate to home page
     router.push('/');
-
-    console.log("Cancel clicked, form cleared, and navigating to home page");
   };
 
   return (
@@ -77,16 +103,14 @@ export default function RegistrationPage() {
                 <InputRightElement h={"full"}>
                   <Button
                     variant={"ghost"}
-                    onClick={() =>
-                      setShowPassword((showPassword) => !showPassword)
-                    }
+                    onClick={() => setShowPassword((showPassword) => !showPassword)}
                   >
                     {showPassword ? <ViewOffIcon /> : <ViewIcon />}
                   </Button>
                 </InputRightElement>
               </InputGroup>
             </FormControl>
-            <FormControl id="confirmPassword" isRequired>
+            <FormControl id="confirmPassword" isRequire >
               <FormLabel>Confirm Password</FormLabel>
               <InputGroup>
                 <Input
@@ -98,9 +122,7 @@ export default function RegistrationPage() {
                   <Button
                     variant={"ghost"}
                     onClick={() =>
-                      setShowConfirmPassword(
-                        (showConfirmPassword) => !showConfirmPassword
-                      )
+                      setShowConfirmPassword((showConfirmPassword) => !showConfirmPassword)
                     }
                   >
                     {showConfirmPassword ? <ViewOffIcon /> : <ViewIcon />}
@@ -112,7 +134,7 @@ export default function RegistrationPage() {
               <Stack
                 direction={{ base: "column", sm: "row" }}
                 align={"start"}
-                 justify={"space-between"}
+                justify={"space-between"}
               >
                 <Checkbox value={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}>
                   Remember me
@@ -125,14 +147,15 @@ export default function RegistrationPage() {
                   bg: "blue.500",
                 }}
                 onClick={handleRegister}
+                isLoading={isLoading}
               >
                 Register
               </Button>
               <Button
-                bg={"gray.400"}
-                color={"white"}
+                bg={"gray.300"}
+                color={"gray.600"}
                 _hover={{
-                  bg: "gray.500",
+                  bg: "gray.400",
                 }}
                 onClick={handleCancel}
               >
