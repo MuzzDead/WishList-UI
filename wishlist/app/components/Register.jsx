@@ -1,79 +1,49 @@
-"use client";
-import React, { useState } from "react";
-import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { useState } from 'react';
 import {
-  Box,
-  Button,
-  Checkbox,
-  Flex,
-  FormControl,
-  FormLabel,
-  Heading,
-  Input,
-  InputGroup,
-  InputRightElement,
-  Stack,
-  Text,
-  useToast,
+  Flex, Stack, Heading, Box, FormControl, FormLabel, Input, InputGroup,
+  InputRightElement, Button, Checkbox
 } from "@chakra-ui/react";
-import { useRouter } from 'next/navigation';
-import { api } from '../services/api'; // Make sure this path is correct
-import { useAuth } from '../hooks/useAuth'; // Make sure this path is correct
+import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
 
-export default function RegistrationPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+export default function RegisterForm() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const router = useRouter();
-  const toast = useToast();
-  const { login } = useAuth();
-
   const handleRegister = async () => {
+    setIsLoading(true);
     if (password !== confirmPassword) {
-      toast({
-        title: "Passwords do not match",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+      setError("Passwords do not match");
+      setIsLoading(false);
       return;
     }
-  
-    setIsLoading(true);
+    // Виклик API для реєстрації
     try {
-      const result = await api.register(username, password, confirmPassword);
-      login(result.token);
-      toast({
-        title: "Registration successful",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-      router.push('/');
-    } catch (error) {
-      toast({
-        title: "Registration failed",
-        description: error.message,
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+      // Твоя функція для реєстрації через API
+      const success = await registerUser(username, password, confirmPassword);
+      if (!success) {
+        setError("Registration failed. Please try again.");
+      } else {
+        setError(null);
+        // Додаткові дії після успішної реєстрації, наприклад, редирект
+      }
+    } catch (err) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
-    setUsername("");
-    setPassword("");
-    setConfirmPassword("");
-    setRememberMe(false);
-    router.push('/');
+    setUsername('');
+    setPassword('');
+    setConfirmPassword('');
+    setError(null);
   };
 
   return (
@@ -92,6 +62,7 @@ export default function RegistrationPage() {
                 onChange={(e) => setUsername(e.target.value)}
               />
             </FormControl>
+
             <FormControl id="password" isRequired>
               <FormLabel>Password</FormLabel>
               <InputGroup>
@@ -110,7 +81,8 @@ export default function RegistrationPage() {
                 </InputRightElement>
               </InputGroup>
             </FormControl>
-            <FormControl id="confirmPassword" isRequire >
+
+            <FormControl id="confirmPassword" isRequired>
               <FormLabel>Confirm Password</FormLabel>
               <InputGroup>
                 <Input
@@ -121,31 +93,33 @@ export default function RegistrationPage() {
                 <InputRightElement h={"full"}>
                   <Button
                     variant={"ghost"}
-                    onClick={() =>
-                      setShowConfirmPassword((showConfirmPassword) => !showConfirmPassword)
-                    }
+                    onClick={() => setShowConfirmPassword((showConfirmPassword) => !showConfirmPassword)}
                   >
                     {showConfirmPassword ? <ViewOffIcon /> : <ViewIcon />}
                   </Button>
                 </InputRightElement>
               </InputGroup>
             </FormControl>
+
+            {error && <Box color="red.500">{error}</Box>}
+
             <Stack spacing={10}>
               <Stack
                 direction={{ base: "column", sm: "row" }}
                 align={"start"}
                 justify={"space-between"}
               >
-                <Checkbox value={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}>
+                <Checkbox
+                  isChecked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                >
                   Remember me
                 </Checkbox>
               </Stack>
               <Button
                 bg={"blue.400"}
                 color={"white"}
-                _hover={{
-                  bg: "blue.500",
-                }}
+                _hover={{ bg: "blue.500" }}
                 onClick={handleRegister}
                 isLoading={isLoading}
               >
@@ -154,9 +128,7 @@ export default function RegistrationPage() {
               <Button
                 bg={"gray.300"}
                 color={"gray.600"}
-                _hover={{
-                  bg: "gray.400",
-                }}
+                _hover={{ bg: "gray.400" }}
                 onClick={handleCancel}
               >
                 Cancel

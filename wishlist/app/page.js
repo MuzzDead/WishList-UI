@@ -1,11 +1,12 @@
 "use client";
 
-import { ChakraProvider, Box, Button } from "@chakra-ui/react";
+import { ChakraProvider, Box, Button, Heading, Center} from "@chakra-ui/react";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import UserPage from "./components/UserPage";
 import Link from 'next/link';
 import SearchUser from "./components/SerchUser";
+import OurUserPage from "./components/OurUserPage";
 
 
 const mockWishes = [
@@ -28,22 +29,31 @@ const mockWishes = [
   { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjdvsQK0NdyvNVDrtLK0T70tGO44ck8Rhwnw&s", title: "Kitchen Appliances", description: "A set of high-quality kitchen appliances for home cooks", createdAt: "2023-12-01" },
 ];
 
+const selectedWishes = [
+  { image: "https://www.asus.com/media/Odin/Websites/global/Series/9.png", title: "Selected Laptop", description: "A powerful laptop for work that I've selected", createdAt: "2023-05-15" },
+  { image: "https://offshore-freedom.com/wp-content/uploads/2024/04/living-in-the-bahamas-nassau.jpeg", title: "Dream Vacation", description: "A relaxing beach vacation I'm planning", createdAt: "2023-06-01" },
+  { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxVUpd37ROVc_7LEW291Ql0HkBUUNUjEqjaA&s", title: "Professional Camera", description: "A professional DSLR camera for my photography hobby", createdAt: "2023-06-10" },
+  { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2kQF-Vd35VDqu88HReZnXaXy2Mt3HfHKjrg&s", title: "Fantasy Book Collection", description: "Complete set of my favorite fantasy books", createdAt: "2023-06-15" },
+  { image: "https://www.cnet.com/a/img/resize/e77eaea049a55a7744636aca299bdfe8fd410911/hub/2023/09/20/9a707e3f-6b94-4edf-ae84-12a10ad04a68/230919-site-apple-watch-ultra-2-review.jpg?auto=webp&fit=crop&height=360&width=640", title: "Fitness Smartwatch", description: "Latest model smartwatch for tracking my workouts", createdAt: "2023-06-20" },
+  { image: "https://blog.playstation.com/tachyon/2023/10/cd56722db7b991b3d7a33f1bafd55f80d0ac553d.png?resize=1088%2C612&crop_strategy=smart", title: "Gaming Setup", description: "Ultimate gaming console with VR for immersive gaming", createdAt: "2023-07-10" },
+];
+
 export default function Home() {
   return (
     <Box>
-      <Link href="/create-wish" passHref legacyBehavior>
-        <Button 
-          as="a"
-          colorScheme="teal" 
-          variant="solid"
-          w="100px"
-          mb={4}
-        >
-          Create Wish
-        </Button>
-      </Link>
-      
-      <SearchUser />
+      <Center>
+
+        <Heading as='h2' size='3xl' noOfLines={1} justifyContent="center">
+          Welcome on WishList!
+        </Heading>
+      </Center>
+      <br>
+      </br>
+      <br>
+      </br>
+        <SearchUser />
+
+      <OurUserPage username="John Doe" selectedWishes={selectedWishes} wishes={mockWishes} />
     </Box>
   );
 }

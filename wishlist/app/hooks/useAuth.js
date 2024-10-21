@@ -1,22 +1,33 @@
-import { useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 
-export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+// Створюємо контекст для авторизації
+const AuthContext = createContext();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-  }, []);
+// Провайдер контексту авторизації
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
 
-  const login = (token) => {
-    localStorage.setItem('token', token);
-    setIsAuthenticated(true);
+  const login = (username, password) => {
+    // Логіка авторизації
+    // Після успішного логіну встановлюємо користувача
+    setUser({ username });
+    localStorage.setItem('username', username);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
+    // Логіка для виходу з системи
+    setUser(null);
+    localStorage.removeItem('username');
   };
 
-  return { isAuthenticated, login, logout };
-}
+  return (
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+// Хук для використання контексту авторизації
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
