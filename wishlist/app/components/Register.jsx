@@ -1,48 +1,88 @@
-import { useState } from 'react';
+"use client"; // Додайте цю директиву на початку файлу
+
+import { useState } from "react";
 import {
-  Flex, Stack, Heading, Box, FormControl, FormLabel, Input, InputGroup,
-  InputRightElement, Button, Checkbox
+  Flex,
+  Stack,
+  Heading,
+  Box,
+  FormControl,
+  FormLabel,
+  Input,
+  InputGroup,
+  InputRightElement,
+  Button,
+  Checkbox,
+  useToast
 } from "@chakra-ui/react";
 import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { useRouter } from 'next/navigation'; // Використовуйте 'next/navigation' для useRouter
 
 export default function RegisterForm() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter(); // Використовуйте useRouter для навігації
+  const toast = useToast(); // створюємо інстанс toast
 
   const handleRegister = async () => {
     setIsLoading(true);
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       setIsLoading(false);
       return;
     }
-    // Виклик API для реєстрації
+
     try {
-      // Твоя функція для реєстрації через API
-      const success = await registerUser(username, password, confirmPassword);
-      if (!success) {
-        setError("Registration failed. Please try again.");
-      } else {
-        setError(null);
-        // Додаткові дії після успішної реєстрації, наприклад, редирект
+      const response = await fetch('https://localhost:7168/api/Account/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          Username: username,
+          Password: password,
+          ConfirmPassword: confirmPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
       }
-    } catch (err) {
-      setError(err.message);
+
+
+      localStorage.setItem('token', data.Token);
+      localStorage.setItem('username', data.Username);
+
+      // Показуємо повідомлення про успішну реєстрацію
+      toast({
+        title: "Registration successful!",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+
+      router.push('/');
+
+    } catch (error) {
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
-    setUsername('');
-    setPassword('');
-    setConfirmPassword('');
+    setUsername("");
+    setPassword("");
+    setConfirmPassword("");
     setError(null);
   };
 
@@ -74,7 +114,7 @@ export default function RegisterForm() {
                 <InputRightElement h={"full"}>
                   <Button
                     variant={"ghost"}
-                    onClick={() => setShowPassword((showPassword) => !showPassword)}
+                    onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <ViewOffIcon /> : <ViewIcon />}
                   </Button>
@@ -92,8 +132,8 @@ export default function RegisterForm() {
                 />
                 <InputRightElement h={"full"}>
                   <Button
-                    variant={"ghost"}
-                    onClick={() => setShowConfirmPassword((showConfirmPassword) => !showConfirmPassword)}
+                    variant ={"ghost"}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? <ViewOffIcon /> : <ViewIcon />}
                   </Button>
@@ -101,7 +141,7 @@ export default function RegisterForm() {
               </InputGroup>
             </FormControl>
 
-            {error && <Box color="red.500">{error}</Box>}
+            {error && <Box color="red.500">{error}</Box> }
 
             <Stack spacing={10}>
               <Stack
