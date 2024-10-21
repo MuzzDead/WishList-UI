@@ -1,54 +1,59 @@
-"use client";
-import React, { useState } from "react";
-import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import React, { useEffect, useState } from 'react';
 import {
+  Flex,
   Box,
   Button,
-  Checkbox,
-  Flex,
   FormControl,
   FormLabel,
-  Heading,
   Input,
+  Stack,
+  Heading,
+  Checkbox,
   InputGroup,
   InputRightElement,
-  Stack,
-  Text,
   useToast,
 } from "@chakra-ui/react";
-import { useRouter } from 'next/navigation';
-import { api } from '../services/api'; // Make sure this path is correct
-import { useAuth } from '../hooks/useAuth'; // Make sure this path is correct
+import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { useRouter } from "next/navigation";
+import axios from "axios"; // Імпортуємо axios
 
 export default function LoginPage() {
+  console.log("Login component is rendered");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
   const toast = useToast();
-  const { login } = useAuth();
 
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-      const result = await api.login(username, password);
-      login(result.token);
+      const response = await axios.post('https://localhost:7168/api/Account/login', {
+        Username: username,
+        Password: password,
+      });
+
+      // Зберігаємо токен і username у localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('username', response.data.username);
+      
       toast({
-        title: "Login successful",
+        title: "Login successful.",
         status: "success",
-        duration: 3000,
+        duration: 2000,
         isClosable: true,
       });
-      router.push('/');
+
+      router.push("/");
     } catch (error) {
       toast({
-        title: "Login failed",
-        description: error.message,
+        title: "Login failed.",
+        description: error.response.data || "An error occurred.",
         status: "error",
-        duration: 3000,
+        duration: 2000,
         isClosable: true,
       });
     } finally {
@@ -60,8 +65,22 @@ export default function LoginPage() {
     setUsername("");
     setPassword("");
     setRememberMe(false);
-    router.push('/');
   };
+
+const checkToken = () => {
+  console.log("checkToken is called"); // Додайте цей рядок
+  const token = localStorage.getItem('token');
+  if (token) {
+    console.log("Token is stored:", token);
+  } else {
+    console.log("No token found.");
+  }
+};
+  
+  // Викликайте цю функцію, наприклад, в useEffect
+  useEffect(() => {
+    checkToken();
+  }, []);
 
   return (
     <Flex minH={"100vh"} align={"center"} justify={"center"} bg={"gray.50"}>
@@ -74,7 +93,6 @@ export default function LoginPage() {
             <FormControl id="username" isRequired>
               <FormLabel>Username</FormLabel>
               <Input
-                type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -90,7 +108,7 @@ export default function LoginPage() {
                 <InputRightElement h={"full"}>
                   <Button
                     variant={"ghost"}
-                    onClick={() => setShowPassword((showPassword) => !showPassword)}
+                    onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <ViewOffIcon /> : <ViewIcon />}
                   </Button>
@@ -103,7 +121,10 @@ export default function LoginPage() {
                 align={"start"}
                 justify={"space-between"}
               >
- <Checkbox value={rememberMe} onChange={(e) => setRememberMe(e.target.checked)}>
+                <Checkbox
+                  isChecked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                >
                   Remember me
                 </Checkbox>
               </Stack>
