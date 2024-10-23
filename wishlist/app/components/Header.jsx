@@ -50,7 +50,9 @@ const Header = () => {
             </MenuButton>
             <MenuList>
               <MenuItem>
-                <Link href="/profile">My Profile</Link>
+                <Link href="/profile" passHref legacyBehavior>
+                  My Profile
+                </Link>
               </MenuItem>
               <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </MenuList>
