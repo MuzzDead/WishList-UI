@@ -1,11 +1,13 @@
 import React from 'react';
 import { Box, Image, Heading, Text, Button, VStack } from "@chakra-ui/react";
 
-const WishCard = ({ image, title, description, createdAt }) => {
+const WishCard = ({ imageUrl, title, description, createdAt }) => {
   // Truncate description to 180 characters
   const truncatedDescription = description.length > 180 
     ? description.slice(0, 177) + '...' 
     : description;
+
+  console.log("Image URL:", imageUrl); // Додано для перевірки
 
   return (
     <Box 
@@ -22,7 +24,7 @@ const WishCard = ({ image, title, description, createdAt }) => {
     >
       <Box p="3" bg="gray.50" flexShrink={0}>
         <Image 
-          src={image} 
+          src={imageUrl || 'https://i.imgflip.com/2siu6l.jpg?a480408'}
           alt="Wish Image" 
           objectFit="cover" 
           height="120px" 
