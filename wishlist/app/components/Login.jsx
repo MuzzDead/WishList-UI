@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { jwtDecode } from "jwt-decode";
+
+import React, { useEffect, useState } from "react";
 import {
   Flex,
   Box,
@@ -18,7 +20,6 @@ import { useRouter } from "next/navigation";
 import axios from "axios"; // Імпортуємо axios
 
 export default function LoginPage() {
-  console.log("Login component is rendered");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -31,15 +32,22 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.post('https://localhost:7168/api/Account/login', {
-        Username: username,
-        Password: password,
-      });
+      const response = await axios.post(
+        "https://localhost:7168/api/Account/login",
+        {
+          Username: username,
+          Password: password,
+        }
+      );
 
-      // Зберігаємо токен і username у localStorage
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('username', response.data.username);
-      
+      const token = response.data.token;
+      const decodedToken = jwtDecode(token); // Використовуємо jwt_decode
+
+      // Зберігаємо токен, username і userId у localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("username", response.data.username);
+      localStorage.setItem("userId", decodedToken.sub); // Зберігаємо userId з токена
+
       toast({
         title: "Login successful.",
         status: "success",
@@ -49,9 +57,16 @@ export default function LoginPage() {
 
       router.push("/");
     } catch (error) {
+      console.error("Login error:", error); // Логування помилки входу
+
+      // Перевірка наявності response.data
+      const errorMessage = error.response
+        ? error.response.data
+        : "An error occurred.";
+
       toast({
         title: "Login failed.",
-        description: error.response.data || "An error occurred.",
+        description: errorMessage,
         status: "error",
         duration: 2000,
         isClosable: true,
@@ -66,21 +81,6 @@ export default function LoginPage() {
     setPassword("");
     setRememberMe(false);
   };
-
-const checkToken = () => {
-  console.log("checkToken is called"); // Додайте цей рядок
-  const token = localStorage.getItem('token');
-  if (token) {
-    console.log("Token is stored:", token);
-  } else {
-    console.log("No token found.");
-  }
-};
-  
-  // Викликайте цю функцію, наприклад, в useEffect
-  useEffect(() => {
-    checkToken();
-  }, []);
 
   return (
     <Flex minH={"100vh"} align={"center"} justify={"center"} bg={"gray.50"}>
@@ -143,7 +143,7 @@ const checkToken = () => {
                 bg={"gray.300"}
                 color={"gray.600"}
                 _hover={{
-                  bg: "gray.400",
+                  bg: " gray.400",
                 }}
                 onClick={handleCancel}
               >

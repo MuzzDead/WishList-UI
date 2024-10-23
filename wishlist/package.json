@@ -16,6 +16,7 @@
     "axios": "^1.7.7",
     "buffer": "^6.0.3",
     "framer-motion": "^11.11.9",
+    "jwt-decode": "^4.0.0",
     "next": "^14.2.15",
     "react": "^18",
     "react-dom": "^18",
