@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios'; // Додано імпорт axios
 import {
   Box,
   Button,
@@ -18,34 +19,50 @@ export default function CreateUpdate() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
-
   const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ title, description, image });
-    // Add your submission logic here
+    
+    const wishData = {
+      Title: title,
+      Description: description,
+      ImageUrl: image,
+      UserId: localStorage.getItem("userId") // Отримання UserId з localStorage
+    };
+
+    try {
+      const response = await axios.post('https://localhost:7168/api/Wish', wishData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // Додано заголовок авторизації
+        },
+      });
+      console.log("Wish created successfully:", response.data);
+      // Перенаправлення на домашню сторінку або іншу сторінку
+      router.push('/');
+    } catch (error) {
+      console.error("Error creating wish:", error.response?.data?.message || error.message);
+    }
   };
 
   const handleCancel = () => {
-    // Clear form fields
+    // Очистка полів форми
     setTitle('');
     setDescription('');
     setImage('');
     
-    // Navigate to home page
+    // Перенаправлення на домашню сторінку
     router.push('/');
-
     console.log("Cancel clicked, form cleared, and navigating to home page");
   };
 
   const handleTitleChange = (e) => {
-    const value = e.target.value.slice(0, 40); // Limit to 40 characters
+    const value = e.target.value.slice(0, 40); // Обмеження до 40 символів
     setTitle(value);
   };
 
   const handleDescriptionChange = (e) => {
-    const value = e.target.value.slice(0, 180); // Limit to 180 characters
+    const value = e.target.value.slice(0, 180); // Обмеження до 180 символів
     setDescription(value);
   };
 
@@ -114,7 +131,7 @@ export default function CreateUpdate() {
           >
             Cancel
           </Button>
-        </VStack>
+        </VStack >
       </Box>
     </Container>
   );
