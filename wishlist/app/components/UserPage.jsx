@@ -1,7 +1,15 @@
 // app/components/WishList.js
 "use client";
 import React, { useEffect, useState } from "react";
-import { Box, Text, Spinner, Stack, Button, Flex, Heading } from "@chakra-ui/react";
+import {
+  Box,
+  Text,
+  Spinner,
+  Stack,
+  Button,
+  Flex,
+  Heading,
+} from "@chakra-ui/react";
 import axios from "axios";
 import WishCard from "./WishCard"; // Не забудьте імпортувати WishCard
 
@@ -66,8 +74,19 @@ const WishList = ({ username, userId }) => {
         my="40px"
       >
         {currentCards.map((wish, index) => (
-          <Box key={index} px="5px">
-            <WishCard {...wish} />
+          <Box key={wish.id} px="5px">
+            {" "}
+            {/* Використовуйте унікальний id для ключа */}
+            <WishCard
+              id={wish.id}
+              imageUrl={wish.imageUrl}
+              title={wish.title}
+              description={wish.description}
+              createdAt={wish.createdAt}
+              isSelected={wish.isSelected} // Передайте інформацію про вибір
+              selectedByUser
+              Id={wish.selectedByUserId} // Виправлено на selectedByUser Id
+            />
           </Box>
         ))}
       </Box>
