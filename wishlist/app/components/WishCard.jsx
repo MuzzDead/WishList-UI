@@ -45,7 +45,7 @@ const WishCard = ({
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `https://localhost:7168/api/Wish/deselect/${id}`,
+        `https://localhost:7168/api/Wish/deselect/${id}`,  // перевірте значення id
         null,
         {
           headers: {
@@ -54,12 +54,13 @@ const WishCard = ({
         }
       );
       if (response.status === 200) {
-        setIsCardSelected(false); // Змінюємо стан на невибраний
+        setIsCardSelected(false);
       }
     } catch (error) {
-      console.error("Error deselecting wish:", error);
+      console.error("Error deselecting wish:", error);  // Перевірте, яке повідомлення помилки
     }
   };
+  
 
   const isSelectedByCurrentUser = selectedByUserId === currentUserId;
   const isDisabled =
