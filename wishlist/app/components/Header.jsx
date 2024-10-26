@@ -8,14 +8,26 @@ const Header = () => {
   const [token, setToken] = useState(null);
 
   useEffect(() => {
-    // Отримуємо токен і username з localStorage при завантаженні компонента
-    const storedToken = localStorage.getItem('token');
-    const storedUsername = localStorage.getItem('username');
+    const storedToken = localStorage.getItem("token");
+    const storedUsername = localStorage.getItem("username");
     if (storedToken && storedUsername) {
       setToken(storedToken);
       setUsername(storedUsername);
     }
+  
+    // Додаємо обробник події для прослуховування змін у localStorage
+    const handleStorageChange = () => {
+      setUsername(localStorage.getItem("username"));
+    };
+  
+    window.addEventListener("storage", handleStorageChange);
+  
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
+
+  
 
   const handleLogout = () => {
     // Видаляємо токен і username з localStorage
