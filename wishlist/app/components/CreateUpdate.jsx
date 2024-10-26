@@ -39,7 +39,7 @@ export default function CreateUpdate() {
       });
       console.log("Wish created successfully:", response.data);
       // Перенаправлення на домашню сторінку або іншу сторінку
-      router.push('/');
+      router.push('/profile');
     } catch (error) {
       console.error("Error creating wish:", error.response?.data?.message || error.message);
     }

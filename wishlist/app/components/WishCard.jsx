@@ -69,6 +69,7 @@ const WishCard = ({
   const handleButtonClick = () => {
     if (isCardSelected && isSelectedByCurrentUser) {
       handleDeselect(); // Якщо вибрано поточним користувачем, скасовуємо вибір
+      window.location.reload();
     } else if (!isCardSelected) {
       handleSelect(); // Якщо не вибрано, вибираємо
     }
