@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import OurUserPage from "../components/OurUserPage"; 
+import OurUserPage from "../components/OurUserPage";
 
 const ProfilePage = () => {
   const [username, setUsername] = useState(null);
@@ -10,47 +10,44 @@ const ProfilePage = () => {
   const [selectedWishes, setSelectedWishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const storedToken = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
       const storedUsername = localStorage.getItem("username");
       const userId = localStorage.getItem("userId");
 
-      if (storedToken && storedUsername && userId) {
+      if (token && storedUsername && userId) {
         setUsername(storedUsername);
+        setCurrentUserId(userId);
 
         try {
-          console.log("Stored token:", storedToken); 
-          console.log("Fetching user wishes for userId:", userId); 
           const userWishesResponse = await axios.get(
             `https://localhost:7168/api/Wish/user-wishes/${userId}`,
             {
               headers: {
-                Authorization: `Bearer ${storedToken}`,
+                Authorization: `Bearer ${token}`,
               },
             }
           );
           setWishes(userWishesResponse.data);
 
-          console.log("Fetching selected wishes for userId:", userId); 
           const selectedWishesResponse = await axios.get(
             `https://localhost:7168/api/Wish/selected-wishes/${userId}`,
             {
               headers: {
-                Authorization: `Bearer ${storedToken}`,
+                Authorization: `Bearer ${token}`,
               },
             }
           );
           setSelectedWishes(selectedWishesResponse.data);
-        } catch (err) {
-          console.error("Error fetching wishes:", err.response); 
-          setError(err.response?.data?.message || "Failed to fetch wishes");
-        } finally {
           setLoading(false);
+        } catch (err) {
+          setError("Error loading profile data.");
         }
       } else {
-        setError("User is not authenticated.");
+        setError("User not logged in.");
         setLoading(false);
       }
     };
@@ -58,19 +55,15 @@ const ProfilePage = () => {
     fetchData();
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <OurUserPage
       username={username}
-      wishes={wishes}
       selectedWishes={selectedWishes}
+      wishes={wishes}
+      currentUserId={currentUserId}
     />
   );
 };
