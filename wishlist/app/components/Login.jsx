@@ -55,6 +55,10 @@ export default function LoginPage() {
         isClosable: true,
       });
 
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
       router.push("/");
     } catch (error) {
       console.error("Login error:", error); // Логування помилки входу
