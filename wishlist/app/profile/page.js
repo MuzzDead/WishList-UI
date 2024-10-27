@@ -31,7 +31,13 @@ const ProfilePage = () => {
               },
             }
           );
-          setWishes(userWishesResponse.data);
+
+          // Додаємо userId як createdByUserId для кожного бажання користувача
+          const userWishes = userWishesResponse.data.map(wish => ({
+            ...wish,
+            createdByUserId: userId,
+          }));
+          setWishes(userWishes);
 
           const selectedWishesResponse = await axios.get(
             `https://localhost:7168/api/Wish/selected-wishes/${userId}`,

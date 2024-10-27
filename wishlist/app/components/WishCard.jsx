@@ -8,9 +8,11 @@ const WishCard = ({
   title,
   description,
   createdAt,
-  isSelected,
   selectedByUserId,
-  currentUserId, // додаємо пропс для поточного користувача
+  createdByUserId,
+  currentUserId,
+  isSelected,
+  onSelect,
 }) => {
   const [isCardSelected, setIsCardSelected] = useState(isSelected);
 
@@ -34,7 +36,7 @@ const WishCard = ({
         }
       );
       if (response.status === 200) {
-        setIsCardSelected(true); // Встановлюємо, що бажання вибрано
+        setIsCardSelected(true);
       }
     } catch (error) {
       console.error("Error selecting wish:", error);
@@ -45,7 +47,7 @@ const WishCard = ({
     try {
       const token = localStorage.getItem("token");
       const response = await axios.put(
-        `https://localhost:7168/api/Wish/deselect/${id}`,  // перевірте значення id
+        `https://localhost:7168/api/Wish/deselect/${id}`,
         null,
         {
           headers: {
@@ -57,21 +59,19 @@ const WishCard = ({
         setIsCardSelected(false);
       }
     } catch (error) {
-      console.error("Error deselecting wish:", error);  // Перевірте, яке повідомлення помилки
+      console.error("Error deselecting wish:", error);
     }
   };
-  
 
   const isSelectedByCurrentUser = selectedByUserId === currentUserId;
-  const isDisabled =
-    isCardSelected && !isSelectedByCurrentUser; // Кнопка неактивна, якщо вибрано іншим користувачем
+  const isDisabled = isCardSelected && !isSelectedByCurrentUser;
 
   const handleButtonClick = () => {
     if (isCardSelected && isSelectedByCurrentUser) {
-      handleDeselect(); // Якщо вибрано поточним користувачем, скасовуємо вибір
+      handleDeselect();
       window.location.reload();
     } else if (!isCardSelected) {
-      handleSelect(); // Якщо не вибрано, вибираємо
+      handleSelect();
     }
   };
 
@@ -82,8 +82,8 @@ const WishCard = ({
       borderWidth="1px"
       borderRadius="xl"
       overflow="hidden"
-      boxShadow={isCardSelected ? "none" : "md"}
-      bg={isCardSelected ? "gray.200" : "white"}
+      boxShadow="md"
+      bg="white"
       transition="all 0.3s"
       display="flex"
       flexDirection="column"
@@ -98,13 +98,7 @@ const WishCard = ({
           borderRadius="lg"
         />
       </Box>
-      <VStack
-        p="4"
-        align="start"
-        spacing="2"
-        flex={1}
-        justifyContent="space-between"
-      >
+      <VStack p="4" align="start" spacing="2" flex={1} justifyContent="space-between">
         <Box>
           <Heading as="h4" size="sm" noOfLines={1}>
             {title}
@@ -117,20 +111,31 @@ const WishCard = ({
           <Text fontSize="2xs" color="gray.500" mb={2}>
             Created: {createdAt}
           </Text>
-          <Button
-            size="sm"
-            variant="solid"
-            colorScheme={isCardSelected ? "red" : "teal"} // "red" для кнопки скасування вибору
-            w="full"
-            onClick={handleButtonClick} // Кнопка тепер реагує на обидві дії
-            isDisabled={isDisabled} // Кнопка неактивна, якщо вибрано іншим користувачем
-          >
-            {isCardSelected
-              ? isSelectedByCurrentUser
-                ? "Deselect" // Поточний користувач може відмовитися
-                : "Selected" // Для інших користувачів - тільки перегляд
-              : "Select"} {/* Змінюємо текст кнопки */}
-          </Button>
+          {createdByUserId === currentUserId ? (
+            <Box display="flex" justifyContent="space-between">
+              <Button size="sm" variant="outline" colorScheme="blue">
+                Edit
+              </Button>
+              <Button size="sm" variant="outline" colorScheme="red">
+                Delete
+              </Button>
+            </Box>
+          ) : (
+            <Button
+              size="sm"
+              variant="solid"
+              colorScheme={isCardSelected ? "red" : "teal"}
+              w="full"
+              onClick={handleButtonClick}
+              isDisabled={isDisabled}
+            >
+              {isCardSelected
+                ? isSelectedByCurrentUser
+                  ? "Deselect"
+                  : "Selected"
+                : "Select"}
+            </Button>
+          )}
         </Box>
       </VStack>
     </Box>
