@@ -11,71 +11,29 @@ import {
 } from "@chakra-ui/react";
 import WishCard from "./WishCard";
 import Link from "next/link";
-import axios from "axios";
 
-const OurUserPage = ({
-  username,
-  selectedWishes = [],
-  wishes = [],
-  currentUserId,
-}) => {
+const OurUserPage = ({ username, selectedWishes = [], wishes = [], currentUserId }) => {
   const [userSelectedWishes, setUserSelectedWishes] = useState(selectedWishes);
-
-  // Стани пагінації для обраних і створених бажань
   const [currentSelectedPage, setCurrentSelectedPage] = useState(1);
   const [currentCreatedPage, setCurrentCreatedPage] = useState(1);
   const wishesPerPage = 8;
 
   const handleSelectWish = async (wishId) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.put(`https://localhost:7168/api/Wish/select/${wishId}`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUserSelectedWishes((prev) => [
-        ...prev,
-        { ...wishes.find((w) => w.id === wishId), isSelected: true },
-      ]);
-    } catch (error) {
-      console.error("Error selecting wish:", error);
-    }
+    // Обробник вибору побажання
   };
 
   const handleDeselectWish = async (wishId) => {
-    try {
-      const token = localStorage.getItem("token");
-      await axios.put(`https://localhost:7168/api/Wish/deselect/${wishId}`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUserSelectedWishes((prev) => prev.filter((wish) => wish.id !== wishId));
-    } catch (error) {
-      console.error("Error deselecting wish:", error);
-    }
+    // Обробник скасування вибору побажання
   };
 
-  // Розрахунок для пагінації обраних бажань
-  const indexOfLastSelected = currentSelectedPage * wishesPerPage;
-  const indexOfFirstSelected = indexOfLastSelected - wishesPerPage;
-  const currentSelectedWishes = userSelectedWishes.slice(indexOfFirstSelected, indexOfLastSelected);
-  const totalSelectedPages = Math.ceil(userSelectedWishes.length / wishesPerPage);
-
-  // Розрахунок для пагінації створених бажань
-  const indexOfLastCreated = currentCreatedPage * wishesPerPage;
-  const indexOfFirstCreated = indexOfLastCreated - wishesPerPage;
-  const currentCreatedWishes = wishes.slice(indexOfFirstCreated, indexOfLastCreated);
-  const totalCreatedPages = Math.ceil(wishes.length / wishesPerPage);
-
-  const handleSelectedPageChange = (newPage) => {
-    setCurrentSelectedPage(newPage);
-  };
-
-  const handleCreatedPageChange = (newPage) => {
-    setCurrentCreatedPage(newPage);
-  };
+  const currentSelectedWishes = userSelectedWishes.slice(
+    (currentSelectedPage - 1) * wishesPerPage,
+    currentSelectedPage * wishesPerPage
+  );
+  const currentCreatedWishes = wishes.slice(
+    (currentCreatedPage - 1) * wishesPerPage,
+    currentCreatedPage * wishesPerPage
+  );
 
   return (
     <Box minHeight="100vh" bg="gray.50">
@@ -95,90 +53,52 @@ const OurUserPage = ({
 
           <Divider borderColor="gray.300" borderWidth="2px" width="80%" />
 
-          {/* Обрані бажання з пагінацією */}
           <Heading as="h2" size="xl" textAlign="center">
             Selected Wishes
           </Heading>
 
-          {currentSelectedWishes.length > 0 ? (
-            <Flex wrap="wrap" justifyContent="center" gap={4}>
-              {currentSelectedWishes.map((wish) => (
+          <Flex wrap="wrap" justifyContent="center" gap={4}>
+            {currentSelectedWishes.length > 0 ? (
+              currentSelectedWishes.map((wish) => (
                 <WishCard
                   key={wish.id}
                   {...wish}
+                  selectedByUserId={wish.selectedByUserId}
+                  createdByUserId={wish.createdByUserId} // Передаємо createdByUserId
                   currentUserId={currentUserId}
+                  isSelected={true}
                   onSelect={handleSelectWish}
                   onDeselect={handleDeselectWish}
                 />
-              ))}
-            </Flex>
-          ) : (
-            <Text>No wishes selected yet.</Text>
-          )}
-
-          {/* Пагінація обраних бажань */}
-          <Flex justifyContent="center" alignItems="center" mt={4}>
-            <Button
-              onClick={() => handleSelectedPageChange(currentSelectedPage - 1)}
-              isDisabled={currentSelectedPage === 1}
-              mr={2}
-            >
-              Previous
-            </Button>
-            <Text mx={2}>
-              Page {currentSelectedPage} of {totalSelectedPages}
-            </Text>
-            <Button
-              onClick={() => handleSelectedPageChange(currentSelectedPage + 1)}
-              isDisabled={currentSelectedPage === totalSelectedPages}
-              ml={2}
-            >
-              Next
-            </Button>
+              ))
+            ) : (
+              <Text>No selected wishes yet.</Text>
+            )}
           </Flex>
 
           <Divider borderColor="gray.300" borderWidth="2px" width="80%" />
 
-          {/* Створені бажання з пагінацією */}
           <Heading as="h2" size="xl" textAlign="center">
             Your Wishes:
           </Heading>
 
-          {currentCreatedWishes.length > 0 ? (
-            <Flex wrap="wrap" justifyContent="center" gap={4}>
-              {currentCreatedWishes.map((wish) => (
+          <Flex wrap="wrap" justifyContent="center" gap={4}>
+            {currentCreatedWishes.length > 0 ? (
+              currentCreatedWishes.map((wish) => (
                 <WishCard
                   key={wish.id}
                   {...wish}
+                  selectedByUserId={wish.selectedByUserId}
+                  createdByUserId={wish.createdByUserId} // Передаємо createdByUserId
                   currentUserId={currentUserId}
+                  isSelected={false}
                   onSelect={handleSelectWish}
                   onDeselect={handleDeselectWish}
                 />
-              ))}
-            </Flex>
-          ) : (
-            <Text>No wishes created yet.</Text>
-          )}
-
-          {/* Пагінація створених бажань */}
-          <Flex justifyContent="center" alignItems="center" mt={4}>
-            <Button
-              onClick={() => handleCreatedPageChange(currentCreatedPage - 1)}
-              isDisabled={currentCreatedPage === 1}
-              mr={2}
-            >
-              Previous
-            </Button>
-            <Text mx={2}>
-              Page {currentCreatedPage} of {totalCreatedPages}
-            </Text>
-            <Button
-              onClick={() => handleCreatedPageChange(currentCreatedPage + 1)}
-              isDisabled={currentCreatedPage === totalCreatedPages}
-              ml={2}
-            >
-              Next
-            </Button>
+              ))
+            ) : (
+              <Text>No wishes created yet.</Text>
+            )}
           </Flex>
         </VStack>
       </Container>

@@ -1,5 +1,4 @@
-// app/components/WishList.js
-"use client";
+'use client';
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -13,7 +12,7 @@ import {
 import axios from "axios";
 import WishCard from "./WishCard"; // Не забудьте імпортувати WishCard
 
-const WishList = ({ username, userId }) => {
+const WishList = ({ username, userId, currentUserId }) => {
   const [wishes, setWishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,7 +35,7 @@ const WishList = ({ username, userId }) => {
     };
 
     fetchWishes();
-  }, [userId]); // Залежність від userId
+  }, [userId]);
 
   if (loading) {
     return <Spinner size="xl" />;
@@ -46,7 +45,6 @@ const WishList = ({ username, userId }) => {
     return <Text color="red.500">{error}</Text>;
   }
 
-  // Логіка пагінації
   const indexOfLastCard = currentPage * cardsPerPage;
   const indexOfFirstCard = indexOfLastCard - cardsPerPage;
   const currentCards = wishes.slice(indexOfFirstCard, indexOfLastCard);
@@ -73,19 +71,18 @@ const WishList = ({ username, userId }) => {
         mx="-5px"
         my="40px"
       >
-        {currentCards.map((wish, index) => (
+        {currentCards.map((wish) => (
           <Box key={wish.id} px="5px">
-            {" "}
-            {/* Використовуйте унікальний id для ключа */}
             <WishCard
               id={wish.id}
               imageUrl={wish.imageUrl}
               title={wish.title}
               description={wish.description}
               createdAt={wish.createdAt}
-              isSelected={wish.isSelected} // Передайте інформацію про вибір
-              selectedByUser
-              Id={wish.selectedByUserId} // Виправлено на selectedByUser Id
+              isSelected={wish.isSelected}
+              selectedByUserId={wish.selectedByUserId}
+              createdByUserId={wish.userId} // Ідентифікатор автора бажання
+              currentUserId={currentUserId} // Ідентифікатор поточного користувача
             />
           </Box>
         ))}

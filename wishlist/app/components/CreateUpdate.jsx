@@ -52,7 +52,7 @@ export default function CreateUpdate() {
     setImage('');
     
     // Перенаправлення на домашню сторінку
-    router.push('/');
+    router.push('/profile');
     console.log("Cancel clicked, form cleared, and navigating to home page");
   };
 
