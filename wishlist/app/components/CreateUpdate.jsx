@@ -1,7 +1,7 @@
 "use client";
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios'; // Додано імпорт axios
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import axios from 'axios';
 import {
   Box,
   Button,
@@ -19,7 +19,25 @@ export default function CreateUpdate() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
+  const [isEditMode, setIsEditMode] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const wishId = searchParams.get('id');
+
+  useEffect(() => {
+    if (wishId) {
+      setIsEditMode(true);
+      // Fetch existing wish data
+      axios.get(`https://localhost:7168/api/Wish/${wishId}`)
+        .then(response => {
+          const { title, description, imageUrl } = response.data;
+          setTitle(title);
+          setDescription(description);
+          setImage(imageUrl);
+        })
+        .catch(error => console.error("Error fetching wish:", error));
+    }
+  }, [wishId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -28,60 +46,47 @@ export default function CreateUpdate() {
       Title: title,
       Description: description,
       ImageUrl: image,
-      UserId: localStorage.getItem("userId") // Отримання UserId з localStorage
+      UserId: localStorage.getItem("userId"),
     };
 
     try {
-      const response = await axios.post('https://localhost:7168/api/Wish', wishData, {
+      const url = isEditMode 
+        ? `https://localhost:7168/api/Wish/${wishId}`
+        : 'https://localhost:7168/api/Wish';
+      const method = isEditMode ? 'put' : 'post';
+      
+      await axios[method](url, wishData, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // Додано заголовок авторизації
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      console.log("Wish created successfully:", response.data);
-      // Перенаправлення на домашню сторінку або іншу сторінку
+
       router.push('/profile');
     } catch (error) {
-      console.error("Error creating wish:", error.response?.data?.message || error.message);
+      console.error("Error submitting wish:", error.response?.data?.message || error.message);
     }
   };
 
   const handleCancel = () => {
-    // Очистка полів форми
     setTitle('');
     setDescription('');
     setImage('');
-    
-    // Перенаправлення на домашню сторінку
     router.push('/profile');
-    console.log("Cancel clicked, form cleared, and navigating to home page");
-  };
-
-  const handleTitleChange = (e) => {
-    const value = e.target.value.slice(0, 40); // Обмеження до 40 символів
-    setTitle(value);
-  };
-
-  const handleDescriptionChange = (e) => {
-    const value = e.target.value.slice(0, 180); // Обмеження до 180 символів
-    setDescription(value);
   };
 
   return (
     <Container maxW="lg" py={12}>
-      <Box
-        rounded={'lg'}
-        bg={'white'}
-        boxShadow={'lg'}
-        p={8}
-      >
+      <Box rounded={'lg'} bg={'white'} boxShadow={'lg'} p={8}>
         <VStack spacing={4} as="form" onSubmit={handleSubmit}>
-          <Heading fontSize={'2xl'}>Create New Wish</Heading>
+          <Heading fontSize={'2xl'}>
+            {isEditMode ? 'Edit Wish' : 'Create New Wish'}
+          </Heading>
           <FormControl isRequired>
             <FormLabel>Title</FormLabel>
             <Input
               type="text"
               value={title}
-              onChange={handleTitleChange}
+              onChange={(e) => setTitle(e.target.value.slice(0, 40))}
               maxLength={40}
             />
             <Text fontSize="sm" color="gray.500" align="right">
@@ -92,7 +97,7 @@ export default function CreateUpdate() {
             <FormLabel>Description</FormLabel>
             <Textarea
               value={description}
-              onChange={handleDescriptionChange}
+              onChange={(e) => setDescription(e.target.value.slice(0, 180))}
               resize="none"
               minHeight="100px"
               maxLength={180}
@@ -112,26 +117,22 @@ export default function CreateUpdate() {
           <Button
             bg={'blue.400'}
             color={'white'}
-            _hover={{
-              bg: 'blue.500',
-            }}
+            _hover={{ bg: 'blue.500' }}
             type="submit"
             width="full"
           >
-            Create Wish
+            {isEditMode ? 'Update Wish' : 'Create Wish'}
           </Button>
           <Button
             bg={'gray.400'}
             color={'white'}
-            _hover={{
-              bg: 'gray.500',
-            }}
+            _hover={{ bg: 'gray.500' }}
             onClick={handleCancel}
             width="full"
           >
             Cancel
           </Button>
-        </VStack >
+        </VStack>
       </Box>
     </Container>
   );

@@ -1,6 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Box, Image, Heading, Text, Button, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Image,
+  Heading,
+  Text,
+  Button,
+  VStack,
+  IconButton,
+  useToast,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+} from "@chakra-ui/react";
+import { EditIcon, DeleteIcon } from "@chakra-ui/icons";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const WishCard = ({
   id,
@@ -13,8 +31,13 @@ const WishCard = ({
   currentUserId,
   isSelected,
   onSelect,
-}) => {
+  onDelete, // Додано тут
+})  => {
   const [isCardSelected, setIsCardSelected] = useState(isSelected);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef();
+  const toast = useToast();
+  const router = useRouter(); // Використовуємо useRouter для редиректу
 
   useEffect(() => {
     setIsCardSelected(isSelected);
@@ -30,9 +53,7 @@ const WishCard = ({
         `https://localhost:7168/api/Wish/select/${id}`,
         null,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       if (response.status === 200) {
@@ -50,9 +71,7 @@ const WishCard = ({
         `https://localhost:7168/api/Wish/deselect/${id}`,
         null,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       if (response.status === 200) {
@@ -63,13 +82,60 @@ const WishCard = ({
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this wish?")) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.delete(`https://localhost:7168/api/Wish/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.status === 200) {
+        toast({
+          title: "Wish deleted.",
+          description: "Your wish has been successfully deleted.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        if (onDelete) { // Перевірка перед викликом
+          onDelete(id); // Викликає функцію з батьківського компонента для оновлення списку
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to delete wish.",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting wish:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete wish.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+
+  const handleEdit = () => {
+    router.push(`/wish/edit?id=${id}`); // Перехід до сторінки редагування
+  };
+
   const isSelectedByCurrentUser = selectedByUserId === currentUserId;
   const isDisabled = isCardSelected && !isSelectedByCurrentUser;
 
   const handleButtonClick = () => {
     if (isCardSelected && isSelectedByCurrentUser) {
       handleDeselect();
-      window.location.reload();
     } else if (!isCardSelected) {
       handleSelect();
     }
@@ -112,13 +178,45 @@ const WishCard = ({
             Created: {createdAt}
           </Text>
           {createdByUserId === currentUserId ? (
-            <Box display="flex" justifyContent="space-between">
-              <Button size="sm" variant="outline" colorScheme="blue">
-                Edit
-              </Button>
-              <Button size="sm" variant="outline" colorScheme="red">
-                Delete
-              </Button>
+            <Box display="flex" justifyContent="space-between" gap={1}>
+              <IconButton
+                icon={<EditIcon />}
+                size="sm"
+                colorScheme="blue"
+                aria-label="Edit Wish"
+                onClick={handleEdit} // Додаємо функцію редагування
+              />
+              <IconButton
+                icon={<DeleteIcon />}
+                size="sm"
+                colorScheme="red"
+                aria-label="Delete Wish"
+                onClick={onOpen} // Відкриваємо діалог підтвердження
+              />
+              <AlertDialog
+                isOpen={isOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={onClose}
+              >
+                <AlertDialogOverlay>
+                  <AlertDialogContent>
+                    <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                      Delete Wish
+                    </AlertDialogHeader>
+                    <AlertDialogBody>
+                      Are you sure? You can't undo this action.
+                    </AlertDialogBody>
+                    <AlertDialogFooter>
+                      <Button ref={cancelRef} onClick={onClose}>
+                        Cancel
+                      </Button>
+                      <Button colorScheme="red" onClick={handleDelete} ml={3}>
+                        Delete
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialogOverlay>
+              </AlertDialog>
             </Box>
           ) : (
             <Button
