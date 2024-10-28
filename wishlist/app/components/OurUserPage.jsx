@@ -18,6 +18,10 @@ const OurUserPage = ({ username, selectedWishes = [], wishes = [], currentUserId
   const [currentCreatedPage, setCurrentCreatedPage] = useState(1);
   const wishesPerPage = 8;
 
+  // Calculate total pages for each section
+  const totalSelectedPages = Math.ceil(userSelectedWishes.length / wishesPerPage);
+  const totalCreatedPages = Math.ceil(wishes.length / wishesPerPage);
+
   const handleSelectWish = async (wishId) => {
     // Обробник вибору побажання
   };
@@ -64,7 +68,7 @@ const OurUserPage = ({ username, selectedWishes = [], wishes = [], currentUserId
                   key={wish.id}
                   {...wish}
                   selectedByUserId={wish.selectedByUserId}
-                  createdByUserId={wish.createdByUserId} // Передаємо createdByUserId
+                  createdByUserId={wish.createdByUserId}
                   currentUserId={currentUserId}
                   isSelected={true}
                   onSelect={handleSelectWish}
@@ -74,6 +78,26 @@ const OurUserPage = ({ username, selectedWishes = [], wishes = [], currentUserId
             ) : (
               <Text>No selected wishes yet.</Text>
             )}
+          </Flex>
+
+          <Flex justifyContent="center" alignItems="center" mt={4}>
+            <Button
+              onClick={() => setCurrentSelectedPage(currentSelectedPage - 1)}
+              isDisabled={currentSelectedPage === 1}
+              mr={2}
+            >
+              Previous
+            </Button>
+            <Text mx={2}>
+              Page {currentSelectedPage} of {totalSelectedPages}
+            </Text>
+            <Button
+              onClick={() => setCurrentSelectedPage(currentSelectedPage + 1)}
+              isDisabled={currentSelectedPage === totalSelectedPages}
+              ml={2}
+            >
+              Next
+            </Button>
           </Flex>
 
           <Divider borderColor="gray.300" borderWidth="2px" width="80%" />
@@ -89,7 +113,7 @@ const OurUserPage = ({ username, selectedWishes = [], wishes = [], currentUserId
                   key={wish.id}
                   {...wish}
                   selectedByUserId={wish.selectedByUserId}
-                  createdByUserId={wish.createdByUserId} // Передаємо createdByUserId
+                  createdByUserId={wish.createdByUserId}
                   currentUserId={currentUserId}
                   isSelected={false}
                   onSelect={handleSelectWish}
@@ -99,6 +123,26 @@ const OurUserPage = ({ username, selectedWishes = [], wishes = [], currentUserId
             ) : (
               <Text>No wishes created yet.</Text>
             )}
+          </Flex>
+
+          <Flex justifyContent="center" alignItems="center" mt={4}>
+            <Button
+              onClick={() => setCurrentCreatedPage(currentCreatedPage - 1)}
+              isDisabled={currentCreatedPage === 1}
+              mr={2}
+            >
+              Previous
+            </Button>
+            <Text mx={2}>
+              Page {currentCreatedPage} of {totalCreatedPages}
+            </Text>
+            <Button
+              onClick={() => setCurrentCreatedPage(currentCreatedPage + 1)}
+              isDisabled={currentCreatedPage === totalCreatedPages}
+              ml={2}
+            >
+              Next
+            </Button>
           </Flex>
         </VStack>
       </Container>
